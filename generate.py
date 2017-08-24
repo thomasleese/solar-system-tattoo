@@ -5,11 +5,12 @@ from collections import namedtuple
 import math
 import random
 
+import ephem
 import dateutil.parser
 import svgwrite
 
 
-Planet = namedtuple('Planet', ['name', 'radius'])
+Planet = namedtuple('Planet', ['name', 'radius', 'body'])
 
 
 class SolarSystemTattoo:
@@ -22,18 +23,19 @@ class SolarSystemTattoo:
         self.drawing = svgwrite.Drawing(filename, size=(size, size))
 
         self.planets = [
-            Planet('Mercury', 2439.7),
-            Planet('Venus', 6051.8),
-            Planet('Earth', 6371.0),
-            Planet('Mars', 3389.5),
-            Planet('Jupiter', 69911),
-            Planet('Saturn', 58232),
-            Planet('Uranus', 25362),
-            Planet('Neptune', 24622),
+            Planet('Mercury', 2439.7, ephem.Mercury(date)),
+            Planet('Venus', 6051.8, ephem.Venus(date)),
+            Planet('Earth', 6371.0, ephem.Sun(date)),
+            Planet('Mars', 3389.5, ephem.Mars(date)),
+            Planet('Jupiter', 69911, ephem.Jupiter(date)),
+            Planet('Saturn', 58232, ephem.Saturn(date)),
+            Planet('Uranus', 25362, ephem.Uranus(date)),
+            Planet('Neptune', 24622, ephem.Neptune(date)),
         ]
 
     def draw(self):
         self.draw_orbits()
+        self.draw_sun()
         self.draw_planets()
 
     def save(self):
@@ -54,25 +56,40 @@ class SolarSystemTattoo:
         for i, planet in enumerate(self.planets):
             self.draw_orbit(i)
 
+    def draw_sun(self):
+        sun = self.drawing.circle(
+            center=self.center,
+            r=20,
+            fill='black'
+        )
+
+        self.drawing.add(sun)
+
     def radius_for_planet(self, planet):
         return (planet.radius ** (1 / 5)) * 1.2
 
-    def draw_planet(self, orbit, angle, planet):
+    def angle_for_planet(self, planet):
+        return planet.body.hlong
+
+    def draw_planet(self, orbit, planet):
         radius = self.radius_for_orbit(orbit)
+        angle = self.angle_for_planet(planet)
         center = (
             self.center[0] + radius * math.cos(angle),
             self.center[1] + radius * math.sin(angle),
         )
 
         planet = self.drawing.circle(
-            center=center, r=self.radius_for_planet(planet), fill='black'
+            center=center,
+            r=self.radius_for_planet(planet),
+            fill='black'
         )
 
         self.drawing.add(planet)
 
     def draw_planets(self):
         for i, planet in enumerate(self.planets):
-            self.draw_planet(i, random.random() * math.pi, planet)
+            self.draw_planet(i, planet)
 
 
 def main():
