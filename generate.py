@@ -59,14 +59,14 @@ class SolarSystemTattoo:
     def draw_sun(self):
         sun = self.drawing.circle(
             center=self.center,
-            r=20,
+            r=self.size * 0.04,
             fill='black'
         )
 
         self.drawing.add(sun)
 
     def radius_for_planet(self, planet):
-        return (planet.radius ** (1 / 5)) * 1.2
+        return (planet.radius ** (1 / 5)) * (self.size * 0.0024)
 
     def angle_for_planet(self, planet):
         return planet.body.hlong
