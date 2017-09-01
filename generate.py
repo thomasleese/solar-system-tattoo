@@ -56,7 +56,7 @@ class Planet(Body):
 
 class Orbit(Body):
 
-    stroke = 'black'
+    stroke = 'rgb(230, 230, 230)'
     stroke_width = 1
 
     def draw(self, drawing):
@@ -199,14 +199,14 @@ class Clock:
 
 class SolarSystemTattoo:
 
-    background_fill = 'rgb(80, 80, 80)'
+    background_fill = 'rgb(40, 40, 40)'
 
     def __init__(self, date, filename, size):
         self.drawing = svgwrite.Drawing(filename, size=(size, size))
 
         self.bodies = (
             [Orbit(i + 1) for i in range(8)] +
-            [Clock(date)] +
+            #[Clock(date)] +
             [
                 Planet(1, 'Mercury', 2439.7, ephem.Mercury(date)),
                 Planet(2, 'Venus', 6051.8, ephem.Venus(date)),
