@@ -79,6 +79,43 @@ class Sun(Body):
         drawing.add(circle)
 
 
+class ClockHand(Body):
+
+    def __init__(self, orbit, proportion, width):
+        super().__init__(orbit)
+        self.angle = (proportion - 0.25) * 2 * math.pi
+        self.stroke_width = width
+
+    def draw(self, drawing, foreground_fill):
+        centre = (drawing['width'] / 2, drawing['height'] / 2)
+        radius = self.orbit_radius_for_drawing(drawing)
+
+        end = (
+            centre[0] + radius * math.cos(self.angle),
+            centre[1] + radius * math.sin(self.angle),
+        )
+
+        line = drawing.line(
+            start=centre, end=end,
+            stroke=foreground_fill, stroke_width=self.stroke_width
+        )
+
+        drawing.add(line)
+
+
+class Clock:
+
+    def __init__(self, date):
+        self.hands = set([
+            ClockHand(6, (date.hour % 12) / 12, 3),
+            ClockHand(9, date.minute / 60, 2),
+        ])
+
+    def draw(self, drawing, foreground_fill):
+        for hand in self.hands:
+            hand.draw(drawing, foreground_fill)
+
+
 class SolarSystemTattoo:
 
     background_fill = 'rgb(50, 50, 50)'
@@ -99,7 +136,8 @@ class SolarSystemTattoo:
                 Planet(6, 'Saturn', 58232, ephem.Saturn(date)),
                 Planet(7, 'Uranus', 25362, ephem.Uranus(date)),
                 Planet(8, 'Neptune', 24622, ephem.Neptune(date)),
-            ]
+            ] +
+            [Clock(date)]
         )
 
     def draw(self):
