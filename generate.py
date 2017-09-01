@@ -10,7 +10,25 @@ import dateutil.parser
 import svgwrite
 
 
-Planet = namedtuple('Planet', ['name', 'radius', 'body'])
+_Planet = namedtuple('_Planet', ['name', 'radius', 'body'])
+
+class Planet(_Planet):
+
+    def draw(self, drawing, centre, orbit_radius, planet_radius, fill):
+        angle = self.body.hlong
+
+        position = (
+            centre[0] + orbit_radius * math.cos(angle),
+            centre[1] + orbit_radius * math.sin(angle),
+        )
+
+        circle = drawing.circle(
+            center=position,
+            r=planet_radius,
+            fill=fill,
+        )
+
+        drawing.add(circle)
 
 
 class SolarSystemTattoo:
@@ -75,27 +93,14 @@ class SolarSystemTattoo:
 
         self.drawing.add(sun)
 
-    def radius_for_planet(self, planet):
-        return (planet.radius ** (1 / 5)) * (self.size * 0.0024)
-
-    def angle_for_planet(self, planet):
-        return planet.body.hlong
-
     def draw_planet(self, orbit, planet):
-        radius = self.radius_for_orbit(orbit)
-        angle = self.angle_for_planet(planet)
-        center = (
-            self.center[0] + radius * math.cos(angle),
-            self.center[1] + radius * math.sin(angle),
-        )
+        orbit_radius = self.radius_for_orbit(orbit)
+        planet_radius = (planet.radius ** (1 / 5)) * (self.size * 0.0024)
 
-        planet = self.drawing.circle(
-            center=center,
-            r=self.radius_for_planet(planet),
-            fill=self.foreground_fill,
+        planet.draw(
+            self.drawing, self.center, orbit_radius,
+            planet_radius, self.foreground_fill
         )
-
-        self.drawing.add(planet)
 
     def draw_planets(self):
         for i, planet in enumerate(self.planets):
