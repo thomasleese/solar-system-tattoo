@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from argparse import ArgumentParser
+import calendar
 from collections import namedtuple
 import math
 import random
@@ -103,17 +104,53 @@ class ClockHand(Body):
         drawing.add(line)
 
 
+class MonthMarker(Body):
+
+    def __init__(self, year, month):
+        super().__init__(3)
+
+        total_days = 366 if calendar.isleap(year) else 365
+        current_day = 0
+        for i in range(1, month):
+            current_day += calendar.monthrange(year, i)[1]
+
+        proportion = current_day / total_days
+
+        self.angle = (proportion - 0.25) * 2 * math.pi
+
+    def draw(self, drawing, foreground_fill):
+        centre = (drawing['width'] / 2, drawing['height'] / 2)
+        radius = self.orbit_radius_for_drawing(drawing)
+
+        start = (
+            centre[0] + radius * math.cos(self.angle),
+            centre[1] + radius * math.sin(self.angle),
+        )
+
+        end = (
+            centre[0] + (radius + 8) * math.cos(self.angle),
+            centre[1] + (radius + 8) * math.sin(self.angle),
+        )
+
+        line = drawing.line(
+            start=start, end=end,
+            stroke=foreground_fill, stroke_width=3
+        )
+
+        drawing.add(line)
+
+
 class Clock:
 
     def __init__(self, date):
-        self.hands = set([
+        self.parts = set([
             ClockHand(6, (date.hour % 12) / 12, 3),
             ClockHand(9, date.minute / 60, 2),
-        ])
+        ] + [MonthMarker(date.year, month) for month in range(1, 13)])
 
     def draw(self, drawing, foreground_fill):
-        for hand in self.hands:
-            hand.draw(drawing, foreground_fill)
+        for part in self.parts:
+            part.draw(drawing, foreground_fill)
 
 
 class SolarSystemTattoo:
