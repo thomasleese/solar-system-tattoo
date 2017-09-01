@@ -35,7 +35,7 @@ class Planet(Body):
         return (self.radius ** (1 / 5)) * (drawing['width'] * 0.0024)
 
     def draw(self, drawing, fill):
-        angle = self.body.hlong
+        angle = self.body.hlong + 2.9939488041
 
         orbit_radius = self.orbit_radius_for_drawing(drawing)
 
