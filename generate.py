@@ -140,13 +140,43 @@ class MonthMarker(Body):
         drawing.add(line)
 
 
+class DayOfWeekMarker(Body):
+
+    def __init__(self, orbit, angle):
+        super().__init__(orbit)
+        self.angle = angle
+
+    def draw(self, drawing, fill):
+        orbit_radius = self.orbit_radius_for_drawing(drawing)
+
+        centre = (drawing['width'] / 2, drawing['height'] / 2)
+
+        position = (
+            centre[0] + orbit_radius * math.cos(self.angle),
+            centre[1] + orbit_radius * math.sin(self.angle),
+        )
+
+        radius = drawing['width'] * 0.005
+
+        circle = drawing.circle(center=position, r=radius, fill=fill)
+        drawing.add(circle)
+
+
 class Clock:
 
     def __init__(self, date):
-        self.parts = set([
-            ClockHand(6, (date.hour % 12) / 12, 3),
-            ClockHand(9, date.minute / 60, 2),
-        ] + [MonthMarker(date.year, month) for month in range(1, 13)])
+        weekday = calendar.weekday(date.year, date.month, date.day)
+
+        minute_proportion = date.minute / 60
+
+        self.parts = set(
+            [
+                ClockHand(6, (date.hour % 12) / 12, 3),
+                ClockHand(9, minute_proportion, 2),
+            ] +
+            [MonthMarker(date.year, month) for month in range(1, 13)] +
+            [DayOfWeekMarker(i + 1.5, (minute_proportion - 0.25) * 2 * math.pi) for i in range(weekday + 1)]
+        )
 
     def draw(self, drawing, foreground_fill):
         for part in self.parts:
