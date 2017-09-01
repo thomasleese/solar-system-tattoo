@@ -15,6 +15,9 @@ Planet = namedtuple('Planet', ['name', 'radius', 'body'])
 
 class SolarSystemTattoo:
 
+    background_fill = 'rgb(50, 50, 50)'
+    foreground_fill = 'white'
+
     def __init__(self, date, filename, size):
         self.date = date
         self.size = size
@@ -34,12 +37,19 @@ class SolarSystemTattoo:
         ]
 
     def draw(self):
+        self.draw_background()
         self.draw_orbits()
         self.draw_sun()
         self.draw_planets()
 
     def save(self):
         self.drawing.save()
+
+    def draw_background(self):
+        self.drawing.add(self.drawing.circle(
+            center=self.center, r=self.half_size,
+            fill=self.background_fill
+        ))
 
     def radius_for_orbit(self, orbit):
         return 50 + ((self.half_size - 50) / 8) * orbit
@@ -48,7 +58,7 @@ class SolarSystemTattoo:
         radius = self.radius_for_orbit(orbit)
         orbit = self.drawing.circle(
             center=self.center, r=radius,
-            fill='none', stroke='black', stroke_width=1
+            fill='none', stroke=self.foreground_fill, stroke_width=1
         )
         self.drawing.add(orbit)
 
@@ -60,7 +70,7 @@ class SolarSystemTattoo:
         sun = self.drawing.circle(
             center=self.center,
             r=self.size * 0.04,
-            fill='black'
+            fill=self.foreground_fill,
         )
 
         self.drawing.add(sun)
@@ -82,7 +92,7 @@ class SolarSystemTattoo:
         planet = self.drawing.circle(
             center=center,
             r=self.radius_for_planet(planet),
-            fill='black'
+            fill=self.foreground_fill,
         )
 
         self.drawing.add(planet)
