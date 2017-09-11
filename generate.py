@@ -242,20 +242,22 @@ class SolarSystemTattoo:
 
 class LightStyle:
     background_fill = 'none'
-    planet_fill = 'rgb(40, 40, 40)'
-    orbit_stroke = 'rgb(70, 70, 70)'
-    clock_stroke = 'rgb(80, 80, 80)'
-    month_marker_stroke = 'black'
+    planet_fill = 'rgb(70, 70, 70)'
+    orbit_stroke = 'rgb(120, 120, 120)'
+
     show_clock = True
+    clock_stroke = 'rgb(150, 150, 150)'
+    month_marker_stroke = 'rgb(150, 150, 150)'
 
 
 class DarkStyle:
-    background_fill = 'rgb(40, 40, 40)'
+    background_fill = 'rgb(100, 100, 100)'
     planet_fill = 'white'
-    orbit_stroke = 'rgb(210, 210, 210)'
+    orbit_stroke = 'rgb(200, 200, 200)'
+
+    show_clock = False
     clock_stroke = 'rgb(180, 180, 180)'
     month_marker_stroke = 'rgb(220, 220, 220)'
-    show_clock = False
 
 
 def main():
