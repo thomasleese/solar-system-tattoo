@@ -24,8 +24,6 @@ class Body:
 
 class Planet(Body):
 
-    fill = 'white'
-
     def __init__(self, orbit, name, radius, body):
         super().__init__(orbit)
 
@@ -36,7 +34,7 @@ class Planet(Body):
     def planet_radius_for_drawing(self, drawing):
         return (self.radius ** (1 / 5)) * (drawing['width'] * 0.0024)
 
-    def draw(self, drawing):
+    def draw(self, drawing, style):
         angle = self.body.hlong + 2.9939488041
 
         orbit_radius = self.orbit_radius_for_drawing(drawing)
@@ -50,23 +48,26 @@ class Planet(Body):
 
         radius = self.planet_radius_for_drawing(drawing)
 
-        circle = drawing.circle(center=position, r=radius, fill=self.fill)
+        circle = drawing.circle(
+            center=position, r=radius, fill=style.planet_fill
+        )
+
         drawing.add(circle)
 
 
 class Orbit(Body):
 
-    stroke = 'rgb(230, 230, 230)'
     stroke_width = 1
 
-    def draw(self, drawing):
+    def draw(self, drawing, style):
         radius = self.orbit_radius_for_drawing(drawing)
 
         centre = (drawing['width'] / 2, drawing['height'] / 2)
 
         circle = drawing.circle(
             center=centre, r=radius,
-            fill='none', stroke=self.stroke, stroke_width=self.stroke_width
+            fill='none', stroke=style.orbit_stroke,
+            stroke_width=self.stroke_width,
         )
 
         drawing.add(circle)
@@ -74,29 +75,28 @@ class Orbit(Body):
 
 class Sun(Body):
 
-    fill = 'white'
-
     def __init__(self):
         super().__init__(0)
 
-    def draw(self, drawing):
+    def draw(self, drawing, style):
         centre = (drawing['width'] / 2, drawing['height'] / 2)
         radius = drawing['width'] * 0.04
 
-        circle = drawing.circle(center=centre, r=radius, fill=self.fill)
+        circle = drawing.circle(
+            center=centre, r=radius, fill=style.planet_fill
+        )
+
         drawing.add(circle)
 
 
 class ClockHand(Body):
-
-    stroke = 'rgb(240, 240, 240)'
 
     def __init__(self, orbit, proportion, width):
         super().__init__(orbit)
         self.angle = (proportion - 0.25) * 2 * math.pi
         self.stroke_width = width
 
-    def draw(self, drawing):
+    def draw(self, drawing, style):
         centre = (drawing['width'] / 2, drawing['height'] / 2)
         radius = self.orbit_radius_for_drawing(drawing)
 
@@ -107,7 +107,7 @@ class ClockHand(Body):
 
         line = drawing.line(
             start=centre, end=end,
-            stroke=self.stroke, stroke_width=self.stroke_width
+            stroke=style.clock_stroke, stroke_width=self.stroke_width
         )
 
         drawing.add(line)
@@ -115,7 +115,6 @@ class ClockHand(Body):
 
 class MonthMarker(Body):
 
-    stroke = 'black'
     stroke_width = 3
 
     def __init__(self, year, month):
@@ -130,7 +129,7 @@ class MonthMarker(Body):
 
         self.angle = (proportion - 0.25) * 2 * math.pi
 
-    def draw(self, drawing):
+    def draw(self, drawing, style):
         centre = (drawing['width'] / 2, drawing['height'] / 2)
         radius = self.orbit_radius_for_drawing(drawing)
 
@@ -146,7 +145,7 @@ class MonthMarker(Body):
 
         line = drawing.line(
             start=start, end=end,
-            stroke=self.stroke, stroke_width=self.stroke_width
+            stroke=style.month_marker_stroke, stroke_width=self.stroke_width
         )
 
         drawing.add(line)
@@ -154,13 +153,11 @@ class MonthMarker(Body):
 
 class DayOfWeekMarker(Body):
 
-    fill = ClockHand.stroke
-
     def __init__(self, orbit, angle):
         super().__init__(orbit)
         self.angle = angle
 
-    def draw(self, drawing):
+    def draw(self, drawing, style):
         orbit_radius = self.orbit_radius_for_drawing(drawing)
 
         centre = (drawing['width'] / 2, drawing['height'] / 2)
@@ -172,7 +169,10 @@ class DayOfWeekMarker(Body):
 
         radius = drawing['width'] * 0.008
 
-        circle = drawing.circle(center=position, r=radius, fill=self.fill)
+        circle = drawing.circle(
+            center=position, r=radius, fill=style.clock_stroke
+        )
+
         drawing.add(circle)
 
 
@@ -192,21 +192,21 @@ class Clock:
             [DayOfWeekMarker(i + 1.5, (minute_proportion - 0.25) * 2 * math.pi) for i in range(weekday + 1)]
         )
 
-    def draw(self, drawing):
+    def draw(self, drawing, style):
         for part in self.parts:
-            part.draw(drawing)
+            part.draw(drawing, style)
 
 
 class SolarSystemTattoo:
 
-    background_fill = 'rgb(40, 40, 40)'
-
-    def __init__(self, date, filename, size):
+    def __init__(self, date, filename, size, style):
         self.drawing = svgwrite.Drawing(filename, size=(size, size))
+
+        self.style = style
 
         self.bodies = (
             [Orbit(i + 1) for i in range(8)] +
-            #[Clock(date)] +
+            ([Clock(date)] if style.show_clock else []) +
             [
                 Planet(1, 'Mercury', 2439.7, ephem.Mercury(date)),
                 Planet(2, 'Venus', 6051.8, ephem.Venus(date)),
@@ -229,25 +229,51 @@ class SolarSystemTattoo:
         radius = self.drawing['width'] / 2
 
         self.drawing.add(self.drawing.circle(
-            center=centre, r=radius, fill=self.background_fill
+            center=centre, r=radius, fill=self.style.background_fill
         ))
 
     def draw_bodies(self):
         for body in self.bodies:
-            body.draw(self.drawing)
+            body.draw(self.drawing, self.style)
 
     def save(self):
         self.drawing.save()
 
 
+class LightStyle:
+    background_fill = 'none'
+    planet_fill = 'rgb(40, 40, 40)'
+    orbit_stroke = 'rgb(70, 70, 70)'
+    clock_stroke = 'rgb(80, 80, 80)'
+    month_marker_stroke = 'black'
+    show_clock = True
+
+
+class DarkStyle:
+    background_fill = 'rgb(40, 40, 40)'
+    planet_fill = 'white'
+    orbit_stroke = 'rgb(210, 210, 210)'
+    clock_stroke = 'rgb(180, 180, 180)'
+    month_marker_stroke = 'rgb(220, 220, 220)'
+    show_clock = False
+
+
 def main():
+    styles = {
+        'light': LightStyle,
+        'dark': DarkStyle,
+    }
+
     parser = ArgumentParser()
     parser.add_argument('date', type=dateutil.parser.parse)
     parser.add_argument('-o', '--output', default='tattoo.svg')
     parser.add_argument('-s', '--size', default=500, type=int)
+    parser.add_argument('-t', '--style', choices=list(styles.keys()), default='dark')
     args = parser.parse_args()
 
-    tattoo = SolarSystemTattoo(args.date, args.output, args.size)
+    style = styles[args.style]
+
+    tattoo = SolarSystemTattoo(args.date, args.output, args.size, style)
     tattoo.draw()
     tattoo.save()
 
