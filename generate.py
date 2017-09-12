@@ -32,7 +32,7 @@ class Planet(Body):
         self.body = body
 
     def planet_radius_for_drawing(self, drawing):
-        return (self.radius ** (1 / 5)) * (drawing['width'] * 0.0024)
+        return (self.radius ** (1 / 6)) * (drawing['width'] * 0.004)
 
     def draw(self, drawing, style):
         angle = self.body.hlong + 2.9939488041
@@ -57,7 +57,7 @@ class Planet(Body):
 
 class Orbit(Body):
 
-    stroke_width = 1
+    stroke_width = 2
 
     def draw(self, drawing, style):
         radius = self.orbit_radius_for_drawing(drawing)
@@ -245,7 +245,7 @@ class LightStyle:
     planet_fill = 'rgb(70, 70, 70)'
     orbit_stroke = 'rgb(120, 120, 120)'
 
-    show_clock = True
+    show_clock = False
     clock_stroke = 'rgb(150, 150, 150)'
     month_marker_stroke = 'rgb(150, 150, 150)'
 
