@@ -1,5 +1,0 @@
-ephem==3.7.6.0
-pyparsing==2.2.0
-python-dateutil==2.6.1
-six==1.10.0
-svgwrite==1.1.11
