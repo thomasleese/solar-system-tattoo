@@ -32,7 +32,7 @@ class Planet(Body):
         self.body = body
 
     def planet_radius_for_drawing(self, drawing):
-        return (self.radius ** (1 / 6)) * (drawing['width'] * 0.004)
+        return (self.radius ** (1 / 6)) * (drawing['width'] * 0.005)
 
     def draw(self, drawing, style):
         angle = self.body.hlong + 2.9939488041
