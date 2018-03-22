@@ -199,24 +199,30 @@ class Clock:
 
 class SolarSystemTattoo:
 
-    def __init__(self, date, filename, size, style):
+    def __init__(self, date, filename, size, style, inner_planets_only):
         self.drawing = svgwrite.Drawing(filename, size=(size, size))
 
         self.style = style
 
-        self.bodies = (
-            [Orbit(i + 1) for i in range(8)] +
-            ([Clock(date)] if style.show_clock else []) +
-            [
-                Planet(1, 'Mercury', 2439.7, ephem.Mercury(date)),
-                Planet(2, 'Venus', 6051.8, ephem.Venus(date)),
-                Planet(3, 'Earth', 6371.0, ephem.Sun(date)),
-                Planet(4, 'Mars', 3389.5, ephem.Mars(date)),
+        planets = [
+            Planet(1, 'Mercury', 2439.7, ephem.Mercury(date)),
+            Planet(2, 'Venus', 6051.8, ephem.Venus(date)),
+            Planet(3, 'Earth', 6371.0, ephem.Sun(date)),
+            Planet(4, 'Mars', 3389.5, ephem.Mars(date)),
+        ]
+
+        if not inner_planets_only:
+            planets += [
                 Planet(5, 'Jupiter', 69911, ephem.Jupiter(date)),
                 Planet(6, 'Saturn', 58232, ephem.Saturn(date)),
                 Planet(7, 'Uranus', 25362, ephem.Uranus(date)),
                 Planet(8, 'Neptune', 24622, ephem.Neptune(date)),
-            ] +
+            ]
+
+        self.bodies = (
+            [Orbit(i + 1) for i in range(4 if inner_planets_only else 8)] +
+            ([Clock(date)] if style.show_clock else []) +
+            planets +
             [Sun()]
         )
 
@@ -271,11 +277,12 @@ def main():
     parser.add_argument('-o', '--output', default='tattoo.svg')
     parser.add_argument('-s', '--size', default=500, type=int)
     parser.add_argument('-t', '--style', choices=list(styles.keys()), default='dark')
+    parser.add_argument('-i', '--inner', default=False, action='store_true')
     args = parser.parse_args()
 
     style = styles[args.style]
 
-    tattoo = SolarSystemTattoo(args.date, args.output, args.size, style)
+    tattoo = SolarSystemTattoo(args.date, args.output, args.size, style, args.inner)
     tattoo.draw()
     tattoo.save()
 
